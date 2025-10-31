@@ -1,0 +1,8 @@
+{
+  "name": "Zeno",
+  "description": "A multi-functional AI web platform featuring chat, image & video generation, web search, file analysis, translation, and speech tools, all powered by the Gemini API.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}

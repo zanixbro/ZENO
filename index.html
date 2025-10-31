@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zeno - Your AI Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --bg: #0b0f16;
+        --card: #0f1620;
+        --accent: #00e6a8;
+        --muted: #9aa4b2;
+        --danger: #ff6b6b;
+        --glass: rgba(255, 255, 255, 0.03);
+        --cell: #0b0d10;
+        --header: #161b22;
+        --hover: #1f242c;
+        --selected: #00e6a8;
+      }
+      body {
+        font-family: 'Inter', "Segoe UI", system-ui, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--muted);
+        overflow: hidden;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: var(--header); }
+      ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #00c792; }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'zeno-bg': 'var(--bg)',
+              'zeno-card': 'var(--card)',
+              'zeno-accent': 'var(--accent)',
+              'zeno-muted': 'var(--muted)',
+              'zeno-danger': 'var(--danger)',
+              'zeno-header': 'var(--header)',
+              'zeno-hover': 'var(--hover)',
+              'zeno-selected': 'var(--selected)',
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
