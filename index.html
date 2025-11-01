@@ -1,26 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zeno - Your AI Companion</title>
+    <meta name="theme-color" content="#00ffc0" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
-        --bg: #0b0f16;
-        --card: #0f1620;
-        --accent: #00e6a8;
-        --muted: #9aa4b2;
-        --danger: #ff6b6b;
-        --glass: rgba(255, 255, 255, 0.03);
-        --cell: #0b0d10;
-        --header: #161b22;
-        --hover: #1f242c;
-        --selected: #00e6a8;
+        --bg: #080c10;
+        --card: #0c1218;
+        --accent: #00ffc0;
+        --muted: #a8b4c2;
+        --danger: #ff5c7c;
+        --glass: rgba(255, 255, 255, 0.05);
+        --cell: #0a0e12;
+        --header: #1a202c;
+        --hover: #2b3440;
+        --selected: var(--accent);
       }
       body {
         font-family: 'Inter', "Segoe UI", system-ui, Arial, sans-serif;
@@ -32,7 +33,7 @@
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: var(--header); }
       ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #00c792; }
+      ::-webkit-scrollbar-thumb:hover { background: #00e6a8; }
     </style>
     <script type="importmap">
 {
@@ -58,6 +59,12 @@
               'zeno-header': 'var(--header)',
               'zeno-hover': 'var(--hover)',
               'zeno-selected': 'var(--selected)',
+            },
+            boxShadow: {
+              'neon-glow': '0 0 10px var(--zeno-accent), 0 0 20px var(--zeno-accent), 0 0 30px var(--zeno-accent)',
+            },
+            dropShadow: {
+              'neon-glow': '0 0 5px var(--zeno-accent), 0 0 15px var(--zeno-accent)',
             }
           }
         }
@@ -67,5 +74,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }).catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import Card from '../components/common/Card';
+import Card from '../components/common/Card'; // Re-added Card import
 import Button from '../components/common/Button';
+import { FilmIcon } from '../components/icons';
 
 const loadingMessages = [
     "Warming up the digital director's chair...",
@@ -11,14 +11,19 @@ const loadingMessages = [
     "This might take a few minutes. Great art needs patience!",
 ];
 
-const VideoGenerator: React.FC = () => {
+interface VideoGeneratorProps {
+    onSaveVideo: (url: string, prompt: string) => void;
+}
+
+const VideoGenerator: React.FC<VideoGeneratorProps> = ({ onSaveVideo }) => {
     const [isKeySelected, setIsKeySelected] = useState(false);
     const [prompt, setPrompt] = useState('A futuristic city with flying cars at sunset, cinematic 4k');
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Fix: Declare loadingMessage as a state variable
     const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
-    
+
     const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -43,11 +48,11 @@ const VideoGenerator: React.FC = () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
       };
     }, [isLoading]);
-    
+
     const handleSelectKey = async () => {
         try {
             await window.aistudio.openSelectKey();
-            setIsKeySelected(true); 
+            setIsKeySelected(true);
         } catch (e) {
             setError("Could not open API key selection dialog.");
         }
@@ -59,6 +64,7 @@ const VideoGenerator: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setVideoUrl(null);
+        // Fix: Call setLoadingMessage to update the loading message state
         setLoadingMessage(loadingMessages[0]);
 
         try {
@@ -79,7 +85,9 @@ const VideoGenerator: React.FC = () => {
                  const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
                  if (!videoResponse.ok) throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
                  const videoBlob = await videoResponse.blob();
-                 setVideoUrl(URL.createObjectURL(videoBlob));
+                 const objectUrl = URL.createObjectURL(videoBlob);
+                 setVideoUrl(objectUrl);
+                 onSaveVideo(objectUrl, prompt); // Save to Savor Studio
             } else {
                 throw new Error("Video generation completed but no download link was found.");
             }
@@ -99,8 +107,8 @@ const VideoGenerator: React.FC = () => {
 
     if (!isKeySelected) {
         return (
-            <Card title="Video Generation" description="Please select your API key to use Veo video generation.">
-                <div className="text-center p-8 bg-zeno-bg rounded-lg border border-zeno-accent/20">
+            <Card title="Video Generator" description="Create stunning videos from text prompts using the Veo model.">
+                <div className="flex flex-col items-center justify-center h-full">
                     <p className="mb-4 text-lg">Veo requires an API key from your project.</p>
                     {error && <p className="text-zeno-danger text-sm mb-4">{error}</p>}
                     <Button onClick={handleSelectKey}>Select API Key</Button>
@@ -113,23 +121,37 @@ const VideoGenerator: React.FC = () => {
     }
 
     return (
-        <Card title="Video Generation" description="Create short (5-30 second) videos from a text description using Veo.">
-            <div className="flex flex-col h-full">
+        <Card title="Video Generator" description="Create stunning videos from text prompts using the Veo model.">
+            <div className="flex flex-col h-full flex-grow overflow-hidden">
                 <div className="space-y-4 mb-4">
                     <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., A futuristic city with flying cars at sunset" className="w-full p-3 bg-zeno-header rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-zeno-accent" rows={4}/>
                 </div>
                 <Button onClick={handleGenerate} isLoading={isLoading} className="w-full">Generate Video</Button>
                 {error && <p className="text-zeno-danger text-sm mt-4 text-center">{error}</p>}
-                <div className="flex-1 mt-6 flex items-center justify-center bg-zeno-bg rounded-lg overflow-hidden border border-zeno-accent/10">
+                <div className="flex-1 mt-6 flex flex-col items-center justify-center bg-zeno-bg rounded-lg overflow-hidden border border-zeno-accent/10 p-4">
                     {isLoading ? (
                         <div className="text-center text-zeno-muted p-4">
                             <p className="text-lg font-semibold mb-2 text-zeno-accent">Generating Video...</p>
+                            {/* Fix: Use the state variable loadingMessage */}
                             <p>{loadingMessage}</p>
                         </div>
                     ) : videoUrl ? (
-                        <video src={videoUrl} controls autoPlay loop className="max-h-full max-w-full" />
+                        <>
+                            <video src={videoUrl} controls autoPlay loop className="max-h-full max-w-full mb-4" />
+                            <Button
+                                as="a"
+                                href={videoUrl}
+                                download="generated_video.mp4"
+                                variant="secondary"
+                                className="mt-2"
+                            >
+                                Download Video
+                            </Button>
+                        </>
                     ) : (
-                        <div className="text-center text-zeno-muted/50">Your generated video will appear here.</div>
+                        <div className="text-center text-zeno-muted/50">
+                            <FilmIcon className="w-16 h-16 mx-auto" /><p>Your generated video will appear here.</p>
+                        </div>
                     )}
                 </div>
             </div>

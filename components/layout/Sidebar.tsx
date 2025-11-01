@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
-import { PageID, MenuGroup } from '../../types';
+import { NavID, MenuGroup } from '../../types'; // Use NavID
 import { MENU_ITEMS } from '../../constants';
 import { ChevronDownIcon } from '../icons';
 
 interface SidebarProps {
-    activePage: PageID;
-    onNavigate: (page: PageID) => void;
+    activePage: NavID; // Use NavID
+    onNavigate: (page: NavID) => void; // Use NavID
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {

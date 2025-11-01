@@ -3,15 +3,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { ChatMessage, Personality } from '../types';
 import { PERSONALITIES } from '../constants';
-import Card from '../components/common/Card';
+import Card from '../components/common/Card'; // Re-added Card import
 import Button from '../components/common/Button';
 import { PaperAirplaneIcon } from '../components/icons';
 
 interface AskAIProps {
     personality: Personality;
+    customPersonalityInstruction: string;
 }
 
-const AskAI: React.FC<AskAIProps> = ({ personality }) => {
+const AskAI: React.FC<AskAIProps> = ({ personality, customPersonalityInstruction }) => {
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,22 +23,23 @@ const AskAI: React.FC<AskAIProps> = ({ personality }) => {
   useEffect(() => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      const systemInstruction = personality === 'custom' ? customPersonalityInstruction : PERSONALITIES[personality];
       chatInstance.current = ai.chats.create({
         model: 'gemini-2.5-flash',
         config: {
-            systemInstruction: PERSONALITIES[personality],
+            systemInstruction: systemInstruction,
         }
       });
-      setHistory([]); 
+      setHistory([]);
       setError(null);
     } catch (e) {
       setError('Failed to initialize the AI model. Please check your API key.');
       console.error(e);
     }
-  }, [personality]);
-  
+  }, [personality, customPersonalityInstruction]); // Added customPersonalityInstruction as a dependency
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); // Reverted to standard scrollIntoView
   }, [history, isLoading]);
 
   const handleSend = async () => {
@@ -52,7 +54,7 @@ const AskAI: React.FC<AskAIProps> = ({ personality }) => {
 
     try {
       const responseStream = await chatInstance.current.sendMessageStream({ message: currentInput });
-      
+
       let modelResponse = '';
       setHistory(prev => [...prev, { role: 'model', parts: [{ text: '' }] }]);
 
@@ -70,7 +72,7 @@ const AskAI: React.FC<AskAIProps> = ({ personality }) => {
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
       setError(`Failed to get response: ${errorMessage}`);
-      setHistory(prev => prev.slice(0, -1)); 
+      setHistory(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }

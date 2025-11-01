@@ -1,0 +1,16 @@
+{
+  "name": "Zeno",
+  "short_name": "Zeno",
+  "description": "A multi-functional AI web platform featuring chat, image creation & editing, video creation & analysis, web search, file & webpage analysis, and audio tools, all powered by the Gemini API.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f16",
+  "theme_color": "#00e6a8",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

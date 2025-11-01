@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
-import Card from '../components/common/Card';
+import Card from '../components/common/Card'; // Re-added Card import
 import Button from '../components/common/Button';
 import { MagnifyingGlassIcon, BookOpenIcon, PaperAirplaneIcon } from '../components/icons';
 import { ChatMessage } from '../types';
@@ -88,10 +87,15 @@ const AITutor: React.FC = () => {
                 model: 'gemini-2.5-flash',
                 config: { systemInstruction: "You are a patient and knowledgeable AI Tutor. Your goal is to explain complex topics simply and effectively. Adapt your teaching style to the user's level of understanding. Encourage questions and provide step-by-step guidance." }
             });
-        } catch (e) { setError('Failed to initialize the AI model.'); }
+            setHistory([]);
+            setError(null);
+        } catch (e) { 
+            setError('Failed to initialize the AI model. Please check your API key.'); 
+            console.error(e);
+        }
     }, []);
 
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history]);
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history, isLoading]);
 
     const handleSend = async () => {
         if (!input.trim() || !chatInstance.current) return;
@@ -105,39 +109,71 @@ const AITutor: React.FC = () => {
             const response = await chatInstance.current.sendMessage({ message: currentInput });
             setHistory(prev => [...prev, { role: 'model', parts: [{ text: response.text }] }]);
         } catch (e) {
-            setError(e instanceof Error ? e.message : 'An unknown error occurred.');
-            setHistory(prev => prev.slice(0, -1));
+            const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+            setError(`Failed to get response: ${errorMessage}`);
+            setHistory(prev => prev.slice(0, -1)); // Remove user message if model fails
         } finally {
             setIsLoading(false);
         }
     };
-    
+
     return (
-        <div className="flex-1 flex flex-col overflow-hidden bg-zeno-bg p-4 rounded-lg border border-zeno-accent/10">
-            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                {history.map((msg, index) => (
-                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-3xl px-5 py-3 rounded-xl whitespace-pre-wrap ${msg.role === 'user' ? 'bg-zeno-accent text-zeno-bg' : 'bg-zeno-header text-zeno-muted'}`}>
-                            {msg.parts[0].text}
+        <div className="flex flex-col h-full">
+            <div className="flex-1 flex flex-col overflow-hidden bg-zeno-bg p-4 rounded-lg border border-zeno-accent/10">
+                <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                    {history.map((msg, index) => (
+                        <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-3xl px-5 py-3 rounded-xl shadow-md whitespace-pre-wrap ${msg.role === 'user' ? 'bg-zeno-accent text-zeno-bg' : 'bg-zeno-header text-zeno-muted'}`}>
+                                {msg.parts[0].text}
+                            </div>
                         </div>
-                    </div>
-                ))}
-                 <div ref={messagesEndRef} />
-            </div>
-            <div className="mt-4 flex items-center space-x-2">
-                <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()} placeholder="Ask a question or request an explanation..." className="flex-1 p-3 bg-zeno-header rounded-lg" disabled={isLoading} />
-                <Button onClick={handleSend} isLoading={isLoading} disabled={!input.trim()}><PaperAirplaneIcon className="w-5 h-5"/></Button>
+                    ))}
+                    {isLoading && history[history.length-1]?.role !== 'model' && (
+                        <div className="flex justify-start">
+                            <div className="max-w-xl px-4 py-2 rounded-xl bg-zeno-header">
+                                <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-zeno-accent rounded-full animate-pulse"></div>
+                                <div className="w-2 h-2 bg-zeno-accent rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                                <div className="w-2 h-2 bg-zeno-accent rounded-full animate-pulse [animation-delay:0.4s]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+                {error && <p className="text-zeno-danger text-sm mt-2">{error}</p>}
+                <div className="mt-4 flex items-center space-x-2">
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+                        placeholder="Ask Zeno Tutor a question..."
+                        className="flex-1 p-3 bg-zeno-header rounded-lg focus:outline-none focus:ring-2 focus:ring-zeno-accent border border-transparent focus:border-zeno-accent"
+                        disabled={isLoading}
+                    />
+                    <Button onClick={handleSend} isLoading={isLoading} disabled={!input.trim()}><PaperAirplaneIcon className="w-5 h-5"/></Button>
+                </div>
             </div>
         </div>
     );
-}
+};
 
 // --- MAIN COMPONENT ---
 const KnowledgeTools: React.FC = () => {
-    const [activeTab, setActiveTab] = useState('webSearch');
+    const [activeTab, setActiveTab] = useState('webSearch'); // Default to Web Search
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'webSearch': return <WebSearch />;
+            case 'aiTutor': return <AITutor />;
+            default: return <WebSearch />; // Fallback to Web Search
+        }
+    };
+
     return (
-        <Card title="Research & Learn" description="Access real-time web knowledge or engage with a personal AI tutor to learn new topics.">
-            <div className="flex flex-col h-full">
+        <Card title="Research & Learn" description="Expand your knowledge with web search and an AI tutor.">
+            <div className="flex flex-col h-full flex-grow overflow-hidden">
                 <div className="border-b border-zeno-header mb-4">
                     <nav className="-mb-px flex space-x-4">
                         <button onClick={() => setActiveTab('webSearch')} className={`${activeTab === 'webSearch' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} flex items-center gap-2 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}><MagnifyingGlassIcon className="w-5 h-5"/>Web Search</button>
@@ -145,7 +181,7 @@ const KnowledgeTools: React.FC = () => {
                     </nav>
                 </div>
                 <div className="flex-grow overflow-auto">
-                    {activeTab === 'webSearch' ? <WebSearch /> : <AITutor />}
+                    {renderContent()}
                 </div>
             </div>
         </Card>
