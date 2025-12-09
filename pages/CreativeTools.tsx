@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import Card from '../components/common/Card';
-import ImageGenerator from './ImageGenerator'; // Import ImageGenerator
+import ImageGenerator from './ImageGenerator';     // Import ImageGenerator
 import ImageEditor from './ImageEditor';     // Import ImageEditor
 import AudioTools from '../components/AudioTools'; // Import AudioTools
-// Remove unused imports related to AI or mediaUtils as they are now in sub-components
-// Remove unused icons if not directly used in CreativeTools itself
+import GameMaker from './GameMaker'; // Import new GameMaker component
 
 interface CreativeToolsProps {
     onSaveImage: (url: string, prompt: string) => void;
     onSaveAudio: (url: string, text: string) => void;
+    onSaveCode: (code: string, language: string, prompt: string) => void; // New prop for GameMaker
 }
 
-const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio }) => {
+const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio, onSaveCode }) => {
     const [activeTab, setActiveTab] = useState('imageGen');
 
     const renderTabContent = () => {
@@ -19,6 +19,7 @@ const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio 
             case 'imageGen': return <ImageGenerator onSaveImage={onSaveImage} />;
             case 'imageEdit': return <ImageEditor />;
             case 'audioGen': return <AudioTools onSaveAudio={onSaveAudio} />;
+            case 'gameMaker': return <GameMaker onSaveCode={onSaveCode} />; // Render GameMaker
             default: return null;
         }
     };
@@ -26,11 +27,12 @@ const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio 
     return (
         <Card title="Media Studio" description="Your hub for AI-powered creativity. Generate and edit images, or create audio content.">
             <div className="flex flex-col h-full">
-                <div className="border-b border-zeno-header mb-4">
+                <div className="border-b border-zeno-header mb-4 overflow-x-auto whitespace-nowrap">
                     <nav className="-mb-px flex space-x-4">
                         <button onClick={() => setActiveTab('imageGen')} className={`${activeTab === 'imageGen' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Image Generation</button>
                         <button onClick={() => setActiveTab('imageEdit')} className={`${activeTab === 'imageEdit' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Image Editor</button>
                         <button onClick={() => setActiveTab('audioGen')} className={`${activeTab === 'audioGen' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Podcast & Speech</button>
+                        <button onClick={() => setActiveTab('gameMaker')} className={`${activeTab === 'gameMaker' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>THREE.js Game Maker</button>
                     </nav>
                 </div>
                 <div className="flex-grow overflow-auto">

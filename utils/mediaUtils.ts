@@ -125,3 +125,57 @@ export const extractVideoFrames = (videoFile: File, numFrames: number, outputFor
         };
     });
 };
+
+/**
+ * Escapes </script> tags in content to prevent premature script termination
+ * and also escapes HTML comments to prevent issues in dynamically injected scripts.
+ * @param content The string content to escape.
+ * @returns The escaped string.
+ */
+export function escapeScriptTags(content: string): string {
+    return content
+        .replace(/<\/script>/g, '<\\u002fscript>') // Escapes </script> to prevent HTML parsing errors
+        .replace(/<!--/g, '<\\!--'); // Escapes HTML comments in script strings defensively
+}
+
+/**
+ * Injects Zeno's theme CSS variables and applies default styles to HTML content.
+ * @param htmlContent The HTML content string.
+ * @returns The HTML content with injected theme styles.
+ */
+export function injectThemeStyles(htmlContent: string): string {
+    const themeStyles = `
+        <style>
+            :root {
+                --bg: #080c10;
+                --card: #0c1218;
+                --accent: #00ffc0;
+                --muted: #a8b4c2;
+                --danger: #ff5c7c;
+                --glass: rgba(255, 255, 255, 0.05);
+                --cell: #0a0e12;
+                --header: #1a202c;
+                --hover: #2b3440;
+                --selected: var(--accent);
+            }
+            html, body {
+                background-color: var(--bg);
+                color: var(--muted);
+                font-family: 'Inter', "Segoe UI", system-ui, Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    `;
+
+    // Attempt to inject styles right after <head> tag
+    const headMatch = htmlContent.match(/<head[^>]*>/i);
+    if (headMatch) {
+        return htmlContent.replace(/<head[^>]*>/i, `${headMatch[0]}\n${themeStyles}`);
+    } else {
+        // Fallback: inject after <html> tag if <head> is missing
+        return htmlContent.replace(/<html([^>]*)>/i, `<html$1>\n${themeStyles}`);
+    }
+}

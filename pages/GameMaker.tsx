@@ -1,20 +1,20 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import Card from '../components/common/Card'; // Re-added Card import
+import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import { PaperAirplaneIcon, ArrowDownTrayIcon } from '../components/icons'; // Import ArrowDownTrayIcon
-import { CodeBlock } from '../components/CodeBlock'; // Import from shared CodeBlock
-import JSZip from 'jszip'; // Import JSZip
-import saveAs from 'file-saver'; // Import saveAs from file-saver
+import { PaperAirplaneIcon, ArrowDownTrayIcon } from '../components/icons';
+import { CodeBlock } from '../components/CodeBlock';
+import JSZip from 'jszip';
+import saveAs from 'file-saver';
 import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils'; // Import new utilities
 
-interface WebMakerProps {
-    onSaveWebpage: (html: string, css: string, javascript: string, prompt: string) => void;
+interface GameMakerProps {
+    onSaveCode: (code: string, language: string, prompt: string) => void;
 }
 
-const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
-    const [webPrompt, setWebPrompt] = useState('Create a responsive landing page for a modern tech startup with a dark theme. Include a hero section with a call to action, a features section, and a contact form.');
+const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
+    const [gamePrompt, setGamePrompt] = useState('Create a simple THREE.js scene with a spinning cube in the center. Allow camera control with mouse.');
     const [htmlCode, setHtmlCode] = useState('');
     const [cssCode, setCssCode] = useState('');
     const [jsCode, setJsCode] = useState('');
@@ -39,12 +39,26 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Generated Webpage</title>
-                <style>${cssCode}</style>
+                <title>Generated THREE.js Game</title>
+                <style>
+                    body { margin: 0; overflow: hidden; }
+                    canvas { display: block; }
+                    ${cssCode}
+                </style>
             </head>
             <body>
                 ${htmlCode}
-                <script>${jsCode}</script>
+                <script type="importmap">
+                    {
+                        "imports": {
+                            "three": "https://aistudiocdn.com/three@0.165.0/build/three.module.js",
+                            "three/examples/jsm/controls/OrbitControls": "https://aistudiocdn.com/three@0.165.0/examples/jsm/controls/OrbitControls.js"
+                        }
+                    }
+                </script>
+                <script type="module">
+                    ${jsCode}
+                </script>
             </body>
             </html>
         `;
@@ -55,8 +69,8 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
         setPreviewSrcDoc(themedPreviewSrcDoc);
     }, [themedPreviewSrcDoc]);
 
-    const handleGenerateWebpage = async () => {
-        if (!webPrompt.trim()) return;
+    const handleGenerateGame = async () => {
+        if (!gamePrompt.trim()) return;
 
         setIsLoading(true);
         setError(null);
@@ -69,21 +83,21 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
-                contents: `Generate a complete, responsive, and modern webpage including HTML, CSS, and if necessary, basic JavaScript (e.g., for simple interactivity like a toggle menu or form submission placeholder logic). Ensure all CSS is internal to the <style> tags and all JavaScript is internal to the <script> tags at the end of the body. Respond in JSON format with 'html', 'css', and 'javascript' keys.
+                contents: `Generate a complete, self-contained THREE.js game/scene. Provide HTML structure (basic canvas or div for rendering), minimal CSS (just for full viewport), and all necessary JavaScript (including THREE.js setup, scene, camera, renderer, lighting, objects, animation loop, and basic interactivity like orbit controls or simple keyboard input if requested implicitly by game type). Ensure THREE.js and OrbitControls are imported as ES modules from 'https://aistudiocdn.com/three@0.165.0/build/three.module.js' and 'https://aistudiocdn.com/three@0.165.0/examples/jsm/controls/OrbitControls.js' respectively. The JavaScript should be a runnable ES module. Respond in JSON format with 'html', 'css', and 'javascript' keys.
                 
-                Webpage description: "${webPrompt}"`,
+                Game/Scene description: "${gamePrompt}"`,
                 config: {
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
-                            html: { type: Type.STRING, description: 'The full HTML content for the webpage body.' },
-                            css: { type: Type.STRING, description: 'The full CSS styles for the webpage, to be placed in a <style> tag.' },
-                            javascript: { type: Type.STRING, description: 'Optional JavaScript for the webpage, to be placed in a <script> tag.' },
+                            html: { type: Type.STRING, description: 'The minimal HTML structure including a canvas/container.' },
+                            css: { type: Type.STRING, description: 'The CSS styles for the game, including body/html reset.' },
+                            javascript: { type: Type.STRING, description: 'The complete JavaScript code for the THREE.js game/scene.' },
                         },
-                        required: ['html', 'css'],
+                        required: ['html', 'css', 'javascript'],
                     },
-                    thinkingConfig: { thinkingBudget: 24576 } // Give Flash more budget for complex code
+                    thinkingConfig: { thinkingBudget: 32768 } // Give pro model more budget for complex code
                 },
             });
 
@@ -95,11 +109,13 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
             setHtmlCode(generatedHtml);
             setCssCode(generatedCss);
             setJsCode(generatedJs);
-            onSaveWebpage(generatedHtml, generatedCss, generatedJs, webPrompt); // Save to Savor Studio
+            onSaveCode(generatedHtml, 'html', `THREE.js Game (HTML): ${gamePrompt}`);
+            onSaveCode(generatedCss, 'css', `THREE.js Game (CSS): ${gamePrompt}`);
+            onSaveCode(generatedJs, 'javascript', `THREE.js Game (JS): ${gamePrompt}`);
 
         } catch (e) {
-            console.error('Webpage generation error:', e);
-            setError(e instanceof Error ? `Failed to generate webpage: ${e.message}. Please try again.` : 'An unknown error occurred during webpage generation.');
+            console.error('THREE.js game generation error:', e);
+            setError(e instanceof Error ? `Failed to generate game: ${e.message}. Please try again.` : 'An unknown error occurred during game generation.');
             setHtmlCode('');
             setCssCode('');
             setJsCode('');
@@ -110,7 +126,7 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
 
     const handleDownloadZip = async () => {
         if (!htmlCode && !cssCode && !jsCode) {
-            setError("No webpage content to download.");
+            setError("No game content to download.");
             return;
         }
 
@@ -118,29 +134,39 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
         setError(null);
         try {
             const zip = new JSZip();
-            // Construct index.html for download with injected theme styles
-            const downloadHtml = injectThemeStyles(`
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Generated Webpage</title>
-                    <style>${cssCode}</style>
-                </head>
-                <body>
-                    ${htmlCode}
-                    <script>${jsCode}</script>
-                </body>
-                </html>
-            `);
+            const downloadHtml = injectThemeStyles(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated THREE.js Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        ${cssCode}
+    </style>
+</head>
+<body>
+    ${htmlCode}
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://aistudiocdn.com/three@0.165.0/build/three.module.js",
+                "three/examples/jsm/controls/OrbitControls": "https://aistudiocdn.com/three@0.165.0/examples/jsm/controls/OrbitControls.js"
+            }
+        }
+    </script>
+    <script type="module">
+        ${jsCode}
+    </script>
+</body>
+</html>`);
             zip.file("index.html", downloadHtml);
-            // Optional: If you want separate files in the zip:
-            // if (cssCode) zip.file("style.css", cssCode);
-            // if (jsCode) zip.file("script.js", jsCode);
+            // zip.file("style.css", cssCode); // CSS is inlined in HTML for simplicity of a single file game
+            // zip.file("script.js", jsCode); // JS is inlined in HTML for simplicity of a single file game
 
             const content = await zip.generateAsync({ type: "blob" });
-            saveAs(content, "webpage_project.zip");
+            saveAs(content, "threejs_game_project.zip");
         } catch (e) {
             setError(e instanceof Error ? `Failed to create ZIP: ${e.message}` : 'An unknown error occurred while creating the ZIP file.');
         } finally {
@@ -148,24 +174,23 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
         }
     };
 
-
     return (
-        <Card title="Web Maker" description="Generate complete HTML, CSS, and JavaScript for webpages from a simple prompt.">
+        <Card title="THREE.js Game Maker" description="Generate a basic THREE.js game structure and code from a prompt. Download as a ZIP to run locally. (Note: Direct APK generation is not supported by this web application.)">
             <div className="flex flex-col h-full flex-grow overflow-hidden">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
                     {/* Left Panel: Controls */}
                     <div className="flex flex-col space-y-4 overflow-hidden">
                         <textarea
-                            value={webPrompt}
-                            onChange={(e) => setWebPrompt(e.target.value)}
-                            placeholder="Describe the webpage you want to create (e.g., 'A responsive landing page for a coffee shop, with a hero image, menu section, and contact form.')."
+                            value={gamePrompt}
+                            onChange={(e) => setGamePrompt(e.target.value)}
+                            placeholder="Describe the THREE.js game/scene you want to create (e.g., 'A simple car driving on a track, with basic controls', 'A solar system visualization with spinning planets')."
                             className="w-full p-3 bg-zeno-header rounded-lg resize-none flex-grow focus:outline-none focus:ring-2 focus:ring-zeno-accent"
                             rows={8}
                             disabled={isLoading}
                         />
-                        <Button onClick={handleGenerateWebpage} isLoading={isLoading} disabled={!webPrompt.trim()} className="w-full">
+                        <Button onClick={handleGenerateGame} isLoading={isLoading} disabled={!gamePrompt.trim()} className="w-full">
                             <PaperAirplaneIcon className="w-5 h-5 mr-2" />
-                            Generate Webpage
+                            Generate Game Code
                         </Button>
                         {error && <p className="text-zeno-danger text-sm mt-2 text-center">{error}</p>}
                     </div>
@@ -190,7 +215,7 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
                         </div>
                         <div className="flex-1 relative bg-zeno-bg rounded-lg p-0 overflow-hidden border border-zeno-accent/10">
                             {isLoading ? (
-                                <div className="absolute inset-0 flex items-center justify-center text-zeno-muted">Generating code...</div>
+                                <div className="absolute inset-0 flex items-center justify-center text-zeno-muted">Generating game code...</div>
                             ) : (
                                 <>
                                     {activeTab === 'html' && <CodeBlock code={htmlCode} language="html" filename="index.html" onCopy={() => setCopyStatus('html')} />}
@@ -208,9 +233,9 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
                             <div className="p-2 bg-zeno-header text-sm text-zeno-muted border-b border-zeno-accent/10">Live Preview</div>
                             <iframe
                                 srcDoc={previewSrcDoc} // Use themed and escaped content
-                                title="Webpage Preview"
+                                title="THREE.js Game Preview"
                                 className="w-full h-full border-0 bg-white"
-                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms" // Added sandbox for security
+                                sandbox="allow-scripts allow-same-origin allow-pointer-lock"
                             />
                         </div>
                         {(htmlCode || cssCode || jsCode) && (
@@ -232,4 +257,4 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
     );
 };
 
-export default WebMaker;
+export default GameMaker;

@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react'; // Added useRef and useEffect
+
+import React, { useState, useRef, useEffect, useMemo } from 'react'; // Added useMemo
 import Button from '../components/common/Button';
 import { GeneratedImageEntry, GeneratedVideoEntry, GeneratedAudioEntry, GeneratedWebpageEntry, GeneratedCodeEntry } from '../types';
 import { SparklesIcon, FilmIcon, SpeakerWaveIcon, GlobeAltIcon, PhotoIcon, CodeBracketIcon } from '../components/icons'; // Import CodeBracketIcon
+import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils'; // Import new utilities
 
 interface SavorStudioGalleryProps {
   generatedImages: GeneratedImageEntry[];
@@ -163,59 +165,68 @@ const SavorStudioGallery: React.FC<SavorStudioGalleryProps> = ({
             {generatedWebpages.length === 0 ? (
               <p className="col-span-full text-center text-zeno-muted/50 p-8">No webpages generated yet. Code something up!</p>
             ) : (
-              generatedWebpages.map((item) => (
-                <div key={item.id} className="bg-zeno-card rounded-lg overflow-hidden border border-zeno-accent/10 flex flex-col shadow-lg">
-                  <div className="p-4 pb-0">
-                    <p className="text-sm text-zeno-muted mb-2 line-clamp-2">{item.prompt}</p>
-                    <p className="text-xs text-zeno-muted/70">{item.timestamp}</p>
-                  </div>
-                  <div className="relative w-full h-64 bg-zeno-bg mt-2">
-                    <iframe
-                      srcDoc={`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Preview</title><style>${item.css}</style></head><body>${item.html}<script>${item.javascript}</script></body></html>`}
-                      title={`Webpage Preview ${item.id}`}
-                      className="w-full h-full border-0 scale-[0.5] origin-top-left" // Scale down for preview
-                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                      style={{ transform: 'scale(0.5)', transformOrigin: 'top left' }}
-                    />
-                     <div className="absolute inset-0 bg-zeno-card/50 flex items-center justify-center pointer-events-none">
-                        <span className="text-zeno-muted text-sm px-3 py-1 rounded bg-zeno-card border border-zeno-accent/20">Preview (scaled)</span>
+              generatedWebpages.map((item) => {
+                // Apply escaping and theme injection defensively here as well
+                const escapedHtml = escapeScriptTags(item.html);
+                const escapedCss = escapeScriptTags(item.css);
+                const escapedJs = escapeScriptTags(item.javascript);
+
+                const previewContent = injectThemeStyles(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Preview</title><style>${escapedCss}</style></head><body>${escapedHtml}<script>${escapedJs}</script></body></html>`);
+                
+                return (
+                  <div key={item.id} className="bg-zeno-card rounded-lg overflow-hidden border border-zeno-accent/10 flex flex-col shadow-lg">
+                    <div className="p-4 pb-0">
+                      <p className="text-sm text-zeno-muted mb-2 line-clamp-2">{item.prompt}</p>
+                      <p className="text-xs text-zeno-muted/70">{item.timestamp}</p>
+                    </div>
+                    <div className="relative w-full h-64 bg-zeno-bg mt-2">
+                      <iframe
+                        srcDoc={previewContent} // Use themed and escaped content
+                        title={`Webpage Preview ${item.id}`}
+                        className="w-full h-full border-0 scale-[0.5] origin-top-left" // Scale down for preview
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                        style={{ transform: 'scale(0.5)', transformOrigin: 'top left' }}
+                      />
+                       <div className="absolute inset-0 bg-zeno-card/50 flex items-center justify-center pointer-events-none">
+                          <span className="text-zeno-muted text-sm px-3 py-1 rounded bg-zeno-card border border-zeno-accent/20">Preview (scaled)</span>
+                      </div>
+                    </div>
+                    <div className="p-4 pt-0 flex space-x-2">
+                      <Button
+                        as="a"
+                        href={URL.createObjectURL(new Blob([item.html], { type: 'text/html' }))}
+                        download={`index_${item.id}.html`}
+                        variant="secondary"
+                        className="flex-1"
+                      >
+                        Download HTML
+                      </Button>
+                      {item.css && (
+                          <Button
+                          as="a"
+                          href={URL.createObjectURL(new Blob([item.css], { type: 'text/css' }))}
+                          download={`style_${item.id}.css`}
+                          variant="secondary"
+                          className="flex-1"
+                          >
+                          Download CSS
+                          </Button>
+                      )}
+                      {item.javascript && (
+                          <Button
+                          as="a"
+                          href={URL.createObjectURL(new Blob([item.javascript], { type: 'text/javascript' }))}
+                          download={`script_${item.id}.js`}
+                          variant="secondary"
+                          className="flex-1"
+                          >
+                          Download JS
+                          </Button>
+                      )}
                     </div>
                   </div>
-                  <div className="p-4 pt-0 flex space-x-2">
-                    <Button
-                      as="a"
-                      href={URL.createObjectURL(new Blob([item.html], { type: 'text/html' }))}
-                      download={`index_${item.id}.html`}
-                      variant="secondary"
-                      className="flex-1"
-                    >
-                      Download HTML
-                    </Button>
-                    {item.css && (
-                        <Button
-                        as="a"
-                        href={URL.createObjectURL(new Blob([item.css], { type: 'text/css' }))}
-                        download={`style_${item.id}.css`}
-                        variant="secondary"
-                        className="flex-1"
-                        >
-                        Download CSS
-                        </Button>
-                    )}
-                    {item.javascript && (
-                        <Button
-                        as="a"
-                        href={URL.createObjectURL(new Blob([item.javascript], { type: 'text/javascript' }))}
-                        download={`script_${item.id}.js`}
-                        variant="secondary"
-                        className="flex-1"
-                        >
-                        Download JS
-                        </Button>
-                    )}
-                  </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         );

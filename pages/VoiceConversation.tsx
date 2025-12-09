@@ -10,7 +10,8 @@ const VoiceConversation: React.FC<VoiceConversationProps> = ({ history }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollAhead({ behavior: 'smooth' }); // Using scrollAhead instead of scrollIntoView
+    // Fix: Corrected typo from scrollAhead to scrollIntoView
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [history]);
 
   return (

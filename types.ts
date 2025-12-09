@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface ChatMessage {
@@ -22,7 +21,9 @@ export type NavID =
   | 'web_maker'
   | 'ml_workflow'
   | 'camera_vision'
-  | 'code_generator'; // Dedicated Code Generator page
+  | 'code_generator'
+  | 'game_maker' // New: Game Maker
+  | 'login'; // New: Placeholder Login page
 
 export interface MenuItem<T extends string = NavID> {
   id: T;
@@ -86,7 +87,7 @@ export interface GeneratedWebpageEntry {
 export interface GeneratedCodeEntry {
   id: string; // Unique ID for the entry
   code: string;
-  language: string; // e.g., 'python', 'javascript', 'html', 'css', '3d-description'
+  language: string; // e.g., 'python', 'javascript', 'html', 'css', '3d-description', 'threejs-game'
   prompt: string;
   timestamp: string;
 }

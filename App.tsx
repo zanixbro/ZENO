@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import { NavID, Personality, TranscriptionEntry, GeneratedImageEntry, GeneratedVideoEntry, GeneratedAudioEntry, GeneratedWebpageEntry, GeneratedCodeEntry } from './types'; // Import NavID and new generated content types
 import VoiceCommandAssistant from './components/VoiceCommandAssistant';
 import Card from './components/common/Card'; // Re-add Card import
+import { LOGIN_PAGE_CONTENT } from './constants'; // Import LOGIN_PAGE_CONTENT
 
 // Page components
 import AskAI from './pages/AskAI';
@@ -19,6 +19,7 @@ import MLWorkflowTools from './pages/MLWorkflowTools';
 import CameraVision from './pages/CameraVision';
 import SavorStudioGallery from './pages/SavorStudioGallery'; // Import new SavorStudioGallery
 import CodeGenerator from './pages/CodeGenerator'; // Import new CodeGenerator
+import GameMaker from './pages/GameMaker'; // Import new GameMaker
 
 const App: React.FC = () => {
   const [activePage, setActivePage] = useState<NavID>('ask');
@@ -120,7 +121,7 @@ const App: React.FC = () => {
           />
         );
       case 'creative':
-        return <CreativeTools onSaveImage={onSaveImage} onSaveAudio={onSaveAudio} />;
+        return <CreativeTools onSaveImage={onSaveImage} onSaveAudio={onSaveAudio} onSaveCode={onSaveCode} />;
       case 'videoGen':
         return <VideoGenerator onSaveVideo={onSaveVideo} />;
       case 'videoEdit':
@@ -139,6 +140,11 @@ const App: React.FC = () => {
         return <CameraVision />;
       case 'code_generator':
         return <CodeGenerator onSaveCode={onSaveCode} />;
+      case 'game_maker': // New case for GameMaker
+        return <GameMaker onSaveCode={onSaveCode} />;
+      case 'login': // New case for placeholder Login page
+        // The LOGIN_PAGE_CONTENT type definition will be fixed in constants.ts
+        return <Card title={LOGIN_PAGE_CONTENT.title} description={LOGIN_PAGE_CONTENT.description}>{LOGIN_PAGE_CONTENT.content}</Card>;
       case 'settings':
         return (
             <Settings

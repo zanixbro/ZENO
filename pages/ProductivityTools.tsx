@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { GoogleGenAI, Part } from '@google/genai';
-import { fileToBase64, fileToText } from '../utils/mediaUtils';
+import { fileToBase64, fileToText, escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils';
 import Card from '../components/common/Card'; // Re-added Card import
 import Button from '../components/common/Button';
 import { ChatMessage } from '../types';
@@ -108,8 +109,10 @@ const HTMLAnalyzer: React.FC = () => {
         if (selectedFile && selectedFile.type === 'text/html') {
             try {
                 const textContent = await fileToText(selectedFile);
+                // Apply escaping immediately after reading the file content
+                const escapedHtmlContent = escapeScriptTags(textContent);
                 setFile(selectedFile);
-                setHtmlContent(textContent);
+                setHtmlContent(escapedHtmlContent);
                 setResult('');
                 setError(null);
             } catch (err) {
@@ -160,6 +163,8 @@ const HTMLAnalyzer: React.FC = () => {
         }
     };
 
+    const themedHtmlContent = useMemo(() => injectThemeStyles(htmlContent), [htmlContent]);
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
@@ -187,10 +192,10 @@ const HTMLAnalyzer: React.FC = () => {
                 <div className="flex flex-col bg-zeno-bg rounded-lg border border-zeno-accent/10 overflow-hidden">
                     <div className="p-2 bg-zeno-header text-sm text-zeno-muted">Webpage Preview</div>
                     <iframe
-                        srcDoc={htmlContent}
+                        srcDoc={themedHtmlContent} // Use themed and escaped content
                         title="HTML Preview"
                         className="w-full h-full border-0 bg-white"
-                        // Removed sandbox attribute
+                        // Removed sandbox attribute for full rendering, but note that this can be a security risk with untrusted content
                     />
                 </div>
             </div>
