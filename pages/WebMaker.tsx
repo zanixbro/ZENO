@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import Card from '../components/common/Card'; // Re-added Card import
@@ -150,7 +151,7 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
 
 
     return (
-        <Card title="Web Maker" description="Generate complete HTML, CSS, and JavaScript for webpages from a simple prompt.">
+        <Card title="Web Maker" description="Generate complete HTML, CSS, and JavaScript for webpages from a simple prompt. Download as a ZIP to run locally.">
             <div className="flex flex-col h-full flex-grow overflow-hidden">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
                     {/* Left Panel: Controls */}

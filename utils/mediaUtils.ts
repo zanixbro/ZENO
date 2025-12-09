@@ -140,6 +140,7 @@ export function escapeScriptTags(content: string): string {
 
 /**
  * Injects Zeno's theme CSS variables and applies default styles to HTML content.
+ * Ensures the output is a full HTML document structure if not already present.
  * @param htmlContent The HTML content string.
  * @returns The HTML content with injected theme styles.
  */
@@ -166,16 +167,32 @@ export function injectThemeStyles(htmlContent: string): string {
                 padding: 0;
                 height: 100%;
                 width: 100%;
+                box-sizing: border-box; /* Include padding/border in element's total width and height */
             }
         </style>
     `;
 
-    // Attempt to inject styles right after <head> tag
-    const headMatch = htmlContent.match(/<head[^>]*>/i);
-    if (headMatch) {
+    // Check if it's already a full HTML document
+    if (htmlContent.match(/<!DOCTYPE html>/i) && htmlContent.match(/<html/i) && htmlContent.match(/<head/i)) {
+        // Inject styles right after <head> tag
         return htmlContent.replace(/<head[^>]*>/i, `${headMatch[0]}\n${themeStyles}`);
     } else {
-        // Fallback: inject after <html> tag if <head> is missing
-        return htmlContent.replace(/<html([^>]*)>/i, `<html$1>\n${themeStyles}`);
+        // Construct a full HTML document if it's just a snippet
+        const headContent = htmlContent.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || '';
+        const bodyContent = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || htmlContent; // Use entire content if no body tag
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+    ${themeStyles}
+    ${headContent}
+</head>
+<body>
+    ${bodyContent}
+</body>
+</html>`;
     }
 }
