@@ -22,8 +22,10 @@ export type NavID =
   | 'ml_workflow'
   | 'camera_vision'
   | 'code_generator'
-  | 'game_maker' // New: Game Maker
-  | 'login'; // New: Placeholder Login page
+  | 'game_maker'
+  | 'login'
+  | 'logout' // New: Logout action
+  | 'zeno_connect'; // New: Zeno Connect social platform
 
 export interface MenuItem<T extends string = NavID> {
   id: T;
@@ -90,4 +92,25 @@ export interface GeneratedCodeEntry {
   language: string; // e.g., 'python', 'javascript', 'html', 'css', '3d-description', 'threejs-game'
   prompt: string;
   timestamp: string;
+}
+
+// New: Social Post interfaces for Zeno Connect
+export interface SocialPost {
+  id: string;
+  type: 'text' | 'image' | 'video' | 'audio' | 'webpage' | 'code';
+  content: {
+    text?: string; // For text posts, audio text
+    url?: string;  // For image, video, audio URLs
+    thumbnail?: string; // For video/webpage thumbnails
+    html?: string; // For webpage content
+    css?: string;
+    javascript?: string;
+    code?: string; // For code content
+    language?: string; // For code language
+  };
+  author: string; // 'You' or AI persona
+  prompt: string; // Original prompt used to generate content
+  timestamp: string;
+  likes: number;
+  comments: { author: string; text: string; timestamp: string }[];
 }

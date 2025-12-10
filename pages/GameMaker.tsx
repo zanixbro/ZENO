@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import Card from '../components/common/Card';
@@ -8,7 +6,7 @@ import { PaperAirplaneIcon, ArrowDownTrayIcon } from '../components/icons';
 import { CodeBlock } from '../components/CodeBlock';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
-import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils'; // Import new utilities
+import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils';
 
 interface GameMakerProps {
     onSaveCode: (code: string, language: string, prompt: string) => void;
@@ -40,7 +38,7 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Generated THREE.js Game</title>
+                <title>Generated Game</title>
                 <style>
                     body { margin: 0; overflow: hidden; }
                     canvas { display: block; }
@@ -63,7 +61,7 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
             </body>
             </html>
         `;
-        return injectThemeStyles(combinedHtml); // Inject theme styles
+        return injectThemeStyles(combinedHtml);
     }, [htmlCode, cssCode, jsCode]);
 
     useEffect(() => {
@@ -98,24 +96,24 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
                         },
                         required: ['html', 'css', 'javascript'],
                     },
-                    thinkingConfig: { thinkingBudget: 32768 } // Give pro model more budget for complex code
+                    thinkingConfig: { thinkingBudget: 32768 }
                 },
             });
 
             const jsonResponse = JSON.parse(response.text.trim());
             const generatedHtml = escapeScriptTags(jsonResponse.html || '');
             const generatedCss = escapeScriptTags(jsonResponse.css || '');
-            const generatedJs = escapeScriptTags(jsonResponse.javascript || ''); // Escape JS immediately
+            const generatedJs = escapeScriptTags(jsonResponse.javascript || '');
 
             setHtmlCode(generatedHtml);
             setCssCode(generatedCss);
             setJsCode(generatedJs);
-            onSaveCode(generatedHtml, 'html', `THREE.js Game (HTML): ${gamePrompt}`);
-            onSaveCode(generatedCss, 'css', `THREE.js Game (CSS): ${gamePrompt}`);
-            onSaveCode(generatedJs, 'javascript', `THREE.js Game (JS): ${gamePrompt}`);
+            onSaveCode(generatedHtml, 'html', `Game (HTML): ${gamePrompt}`);
+            onSaveCode(generatedCss, 'css', `Game (CSS): ${gamePrompt}`);
+            onSaveCode(generatedJs, 'javascript', `Game (JS): ${gamePrompt}`);
 
         } catch (e) {
-            console.error('THREE.js game generation error:', e);
+            console.error('Game generation error:', e);
             setError(e instanceof Error ? `Failed to generate game: ${e.message}. Please try again.` : 'An unknown error occurred during game generation.');
             setHtmlCode('');
             setCssCode('');
@@ -140,7 +138,7 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generated THREE.js Game</title>
+    <title>Generated Game</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -163,11 +161,9 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
 </body>
 </html>`);
             zip.file("index.html", downloadHtml);
-            // zip.file("style.css", cssCode); // CSS is inlined in HTML for simplicity of a single file game
-            // zip.file("script.js", jsCode); // JS is inlined in HTML for simplicity of a single file game
 
             const content = await zip.generateAsync({ type: "blob" });
-            saveAs(content, "threejs_game_project.zip");
+            saveAs(content, "game_project.zip");
         } catch (e) {
             setError(e instanceof Error ? `Failed to create ZIP: ${e.message}` : 'An unknown error occurred while creating the ZIP file.');
         } finally {
@@ -176,7 +172,7 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
     };
 
     return (
-        <Card title="THREE.js Game Maker" description="Generate a basic THREE.js game structure and code from a prompt. Download as a ZIP to run locally. (Note: Direct APK generation is not supported by this web application.)">
+        <Card title="Game Maker" description="Generate a basic THREE.js game structure and code from a prompt. Download as a ZIP to run locally. (Note: Direct APK generation is not supported by this web application.)">
             <div className="flex flex-col h-full flex-grow overflow-hidden">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
                     {/* Left Panel: Controls */}
@@ -233,8 +229,8 @@ const GameMaker: React.FC<GameMakerProps> = ({ onSaveCode }) => {
                         <div className="flex-1 bg-zeno-bg rounded-lg p-0 overflow-hidden border border-zeno-accent/10 mt-4">
                             <div className="p-2 bg-zeno-header text-sm text-zeno-muted border-b border-zeno-accent/10">Live Preview</div>
                             <iframe
-                                srcDoc={previewSrcDoc} // Use themed and escaped content
-                                title="THREE.js Game Preview"
+                                srcDoc={previewSrcDoc}
+                                title="Game Preview"
                                 className="w-full h-full border-0 bg-white"
                                 sandbox="allow-scripts allow-same-origin allow-pointer-lock"
                             />

@@ -1,14 +1,12 @@
-
-
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import Card from '../components/common/Card'; // Re-added Card import
+import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import { PaperAirplaneIcon, ArrowDownTrayIcon } from '../components/icons'; // Import ArrowDownTrayIcon
-import { CodeBlock } from '../components/CodeBlock'; // Import from shared CodeBlock
-import JSZip from 'jszip'; // Import JSZip
-import saveAs from 'file-saver'; // Import saveAs from file-saver
-import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils'; // Import new utilities
+import { PaperAirplaneIcon, ArrowDownTrayIcon } from '../components/icons';
+import { CodeBlock } from '../components/CodeBlock';
+import JSZip from 'jszip';
+import saveAs from 'file-saver';
+import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils';
 
 interface WebMakerProps {
     onSaveWebpage: (html: string, css: string, javascript: string, prompt: string) => void;
@@ -49,7 +47,7 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
             </body>
             </html>
         `;
-        return injectThemeStyles(combinedHtml); // Inject theme styles
+        return injectThemeStyles(combinedHtml);
     }, [htmlCode, cssCode, jsCode]);
 
     useEffect(() => {
@@ -84,19 +82,19 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
                         },
                         required: ['html', 'css'],
                     },
-                    thinkingConfig: { thinkingBudget: 24576 } // Give Flash more budget for complex code
+                    thinkingConfig: { thinkingBudget: 24576 }
                 },
             });
 
             const jsonResponse = JSON.parse(response.text.trim());
             const generatedHtml = escapeScriptTags(jsonResponse.html || '');
             const generatedCss = escapeScriptTags(jsonResponse.css || '');
-            const generatedJs = escapeScriptTags(jsonResponse.javascript || ''); // Escape JS immediately
+            const generatedJs = escapeScriptTags(jsonResponse.javascript || '');
 
             setHtmlCode(generatedHtml);
             setCssCode(generatedCss);
             setJsCode(generatedJs);
-            onSaveWebpage(generatedHtml, generatedCss, generatedJs, webPrompt); // Save to Savor Studio
+            onSaveWebpage(generatedHtml, generatedCss, generatedJs, webPrompt);
 
         } catch (e) {
             console.error('Webpage generation error:', e);
@@ -119,7 +117,6 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
         setError(null);
         try {
             const zip = new JSZip();
-            // Construct index.html for download with injected theme styles
             const downloadHtml = injectThemeStyles(`
                 <!DOCTYPE html>
                 <html lang="en">
@@ -136,9 +133,6 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
                 </html>
             `);
             zip.file("index.html", downloadHtml);
-            // Optional: If you want separate files in the zip:
-            // if (cssCode) zip.file("style.css", cssCode);
-            // if (jsCode) zip.file("script.js", jsCode);
 
             const content = await zip.generateAsync({ type: "blob" });
             saveAs(content, "webpage_project.zip");
@@ -208,10 +202,10 @@ const WebMaker: React.FC<WebMakerProps> = ({ onSaveWebpage }) => {
                         <div className="flex-1 bg-zeno-bg rounded-lg p-0 overflow-hidden border border-zeno-accent/10 mt-4">
                             <div className="p-2 bg-zeno-header text-sm text-zeno-muted border-b border-zeno-accent/10">Live Preview</div>
                             <iframe
-                                srcDoc={previewSrcDoc} // Use themed and escaped content
+                                srcDoc={previewSrcDoc}
                                 title="Webpage Preview"
                                 className="w-full h-full border-0 bg-white"
-                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms" // Added sandbox for security
+                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                             />
                         </div>
                         {(htmlCode || cssCode || jsCode) && (

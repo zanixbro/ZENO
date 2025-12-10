@@ -1,17 +1,15 @@
-
-
-import React, { useState, useRef, useEffect, useMemo } from 'react'; // Added useMemo
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Button from '../components/common/Button';
 import { GeneratedImageEntry, GeneratedVideoEntry, GeneratedAudioEntry, GeneratedWebpageEntry, GeneratedCodeEntry } from '../types';
-import { SparklesIcon, FilmIcon, SpeakerWaveIcon, GlobeAltIcon, PhotoIcon, CodeBracketIcon } from '../components/icons'; // Import CodeBracketIcon
-import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils'; // Import new utilities
+import { SparklesIcon, FilmIcon, SpeakerWaveIcon, GlobeAltIcon, PhotoIcon, CodeBracketIcon } from '../components/icons';
+import { escapeScriptTags, injectThemeStyles } from '../utils/mediaUtils';
 
 interface SavorStudioGalleryProps {
   generatedImages: GeneratedImageEntry[];
   generatedVideos: GeneratedVideoEntry[];
   generatedAudio: GeneratedAudioEntry[];
   generatedWebpages: GeneratedWebpageEntry[];
-  generatedCodeEntries: GeneratedCodeEntry[]; // New prop for generated code
+  generatedCodeEntries: GeneratedCodeEntry[];
 }
 
 // Utility function to convert data URI to Blob
@@ -41,7 +39,7 @@ const SavorStudioGallery: React.FC<SavorStudioGalleryProps> = ({
   generatedCodeEntries,
 }) => {
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'audio' | 'webpages' | 'code'>('images');
-  const contentScrollRef = useRef<HTMLDivElement>(null); // Ref for the scrollable content area
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -167,7 +165,6 @@ const SavorStudioGallery: React.FC<SavorStudioGalleryProps> = ({
               <p className="col-span-full text-center text-zeno-muted/50 p-8">No webpages generated yet. Code something up!</p>
             ) : (
               generatedWebpages.map((item) => {
-                // Apply escaping and theme injection defensively here as well
                 const escapedHtml = escapeScriptTags(item.html);
                 const escapedCss = escapeScriptTags(item.css);
                 const escapedJs = escapeScriptTags(item.javascript);
@@ -182,9 +179,9 @@ const SavorStudioGallery: React.FC<SavorStudioGalleryProps> = ({
                     </div>
                     <div className="relative w-full h-64 bg-zeno-bg mt-2">
                       <iframe
-                        srcDoc={previewContent} // Use themed and escaped content
+                        srcDoc={previewContent}
                         title={`Webpage Preview ${item.id}`}
-                        className="w-full h-full border-0 scale-[0.5] origin-top-left" // Scale down for preview
+                        className="w-full h-full border-0 scale-[0.5] origin-top-left"
                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                         style={{ transform: 'scale(0.5)', transformOrigin: 'top left' }}
                       />

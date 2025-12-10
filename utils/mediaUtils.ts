@@ -172,23 +172,25 @@ export function injectThemeStyles(htmlContent: string): string {
         </style>
     `;
 
-    // Check if it's already a full HTML document
-    if (htmlContent.match(/<!DOCTYPE html>/i) && htmlContent.match(/<html/i) && htmlContent.match(/<head/i)) {
-        // Inject styles right after <head> tag
+    // Attempt to inject styles into existing <head>
+    const headMatch = htmlContent.match(/<head[^>]*>/i);
+    if (headMatch && headMatch[0]) {
         return htmlContent.replace(/<head[^>]*>/i, `${headMatch[0]}\n${themeStyles}`);
     } else {
-        // Construct a full HTML document if it's just a snippet
-        const headContent = htmlContent.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || '';
-        const bodyContent = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || htmlContent; // Use entire content if no body tag
+        // Construct a full HTML document if it's just a snippet or no head was found
+        const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent; // Use entire content if no body tag
+
+        const titleMatch = htmlContent.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+        const titleContent = titleMatch ? titleMatch[1] : 'Preview';
 
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preview</title>
+    <title>${titleContent}</title>
     ${themeStyles}
-    ${headContent}
 </head>
 <body>
     ${bodyContent}

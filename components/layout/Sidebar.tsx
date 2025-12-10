@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
-import { NavID, MenuGroup } from '../../types'; // Use NavID
+import { NavID, MenuGroup } from '../../types';
 import { MENU_ITEMS } from '../../constants';
 import { ChevronDownIcon } from '../icons';
 
 interface SidebarProps {
-    activePage: NavID; // Use NavID
-    onNavigate: (page: NavID) => void; // Use NavID
+    activePage: NavID;
+    onNavigate: (page: NavID) => void;
+    isLoggedIn: boolean;
+    setIsLoggedIn: (loggedIn: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, isLoggedIn, setIsLoggedIn }) => {
     const [openCategories, setOpenCategories] = useState<string[]>(MENU_ITEMS.map(g => g.category));
 
     const toggleCategory = (category: string) => {
         setOpenCategories(prev =>
             prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
         );
+    };
+
+    const handleLogout = () => {
+      setIsLoggedIn(false);
+      onNavigate('login');
     };
 
     return (
@@ -34,12 +41,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
                         </button>
                         {openCategories.includes(group.category) && (
                             <div className="mt-2 space-y-1">
-                                {group.items.map((item) => (
+                                {group.items
+                                    .filter(item => {
+                                        if (item.id === 'login') return !isLoggedIn;
+                                        if (item.id === 'logout') return isLoggedIn;
+                                        return true; // Show other items always
+                                    })
+                                    .map((item) => (
                                     <button
                                         key={item.id}
-                                        onClick={() => onNavigate(item.id)}
+                                        onClick={() => (item.id === 'logout' ? handleLogout() : onNavigate(item.id))}
                                         className={`w-full flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 text-left
-                                            ${activePage === item.id
+                                            ${activePage === item.id || (item.id === 'login' && activePage === 'logout') // Highlight login if on logout page
                                                 ? 'bg-zeno-accent text-zeno-bg shadow-lg shadow-zeno-accent/20'
                                                 : 'text-zeno-muted hover:bg-zeno-hover hover:text-white'
                                             }`}

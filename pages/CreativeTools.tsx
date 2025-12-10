@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Card from '../components/common/Card';
-import ImageGenerator from './ImageGenerator';     // Import ImageGenerator
-import ImageEditor from './ImageEditor';     // Import ImageEditor
-import AudioTools from '../components/AudioTools'; // Import AudioTools
-import GameMaker from './GameMaker'; // Import new GameMaker component
+import ImageGenerator from './ImageGenerator';
+import ImageEditor from './ImageEditor';
+import AudioTools from '../components/AudioTools';
+import GameMaker from './GameMaker';
 
 interface CreativeToolsProps {
     onSaveImage: (url: string, prompt: string) => void;
@@ -19,7 +19,7 @@ const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio,
             case 'imageGen': return <ImageGenerator onSaveImage={onSaveImage} />;
             case 'imageEdit': return <ImageEditor />;
             case 'audioGen': return <AudioTools onSaveAudio={onSaveAudio} />;
-            case 'gameMaker': return <GameMaker onSaveCode={onSaveCode} />; // Render GameMaker
+            case 'gameMaker': return <GameMaker onSaveCode={onSaveCode} />;
             default: return null;
         }
     };
@@ -32,7 +32,7 @@ const CreativeTools: React.FC<CreativeToolsProps> = ({ onSaveImage, onSaveAudio,
                         <button onClick={() => setActiveTab('imageGen')} className={`${activeTab === 'imageGen' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Image Generation</button>
                         <button onClick={() => setActiveTab('imageEdit')} className={`${activeTab === 'imageEdit' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Image Editor</button>
                         <button onClick={() => setActiveTab('audioGen')} className={`${activeTab === 'audioGen' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Podcast & Speech</button>
-                        <button onClick={() => setActiveTab('gameMaker')} className={`${activeTab === 'gameMaker' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>THREE.js Game Maker</button>
+                        <button onClick={() => setActiveTab('gameMaker')} className={`${activeTab === 'gameMaker' ? 'border-zeno-accent text-zeno-accent' : 'border-transparent text-zeno-muted'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>Game Maker</button>
                     </nav>
                 </div>
                 <div className="flex-grow overflow-auto">

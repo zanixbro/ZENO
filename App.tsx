@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar';
-import { NavID, Personality, TranscriptionEntry, GeneratedImageEntry, GeneratedVideoEntry, GeneratedAudioEntry, GeneratedWebpageEntry, GeneratedCodeEntry } from './types'; // Import NavID and new generated content types
+import { NavID, Personality, TranscriptionEntry, GeneratedImageEntry, GeneratedVideoEntry, GeneratedAudioEntry, GeneratedWebpageEntry, GeneratedCodeEntry, SocialPost } from './types';
 import VoiceCommandAssistant from './components/VoiceCommandAssistant';
-import Card from './components/common/Card'; // Re-add Card import
-import { LOGIN_PAGE_CONTENT } from './constants'; // Import LOGIN_PAGE_CONTENT
+import Card from './components/common/Card';
+import { LOGIN_SCREEN_DETAILS } from './constants'; // Updated import name
 
 // Page components
 import AskAI from './pages/AskAI';
@@ -17,12 +17,17 @@ import VoiceConversation from './pages/VoiceConversation';
 import WebMaker from './pages/WebMaker';
 import MLWorkflowTools from './pages/MLWorkflowTools';
 import CameraVision from './pages/CameraVision';
-import SavorStudioGallery from './pages/SavorStudioGallery'; // Import new SavorStudioGallery
-import CodeGenerator from './pages/CodeGenerator'; // Import new CodeGenerator
-import GameMaker from './pages/GameMaker'; // Import new GameMaker
+import SavorStudioGallery from './pages/SavorStudioGallery';
+import CodeGenerator from './pages/CodeGenerator';
+import GameMaker from './pages/GameMaker';
+import LoginPage from './pages/LoginPage'; // New: Login Page
+import ZenoConnect from './pages/ZenoConnect'; // New: Zeno Connect Social Platform
 
 const App: React.FC = () => {
   const [activePage, setActivePage] = useState<NavID>('ask');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('zeno_is_logged_in') === 'true';
+  });
   const [personality, setPersonality] = useState<Personality>(() => {
     const savedPersonality = localStorage.getItem('zeno_personality');
     return (savedPersonality as Personality) || 'zeno';
@@ -37,7 +42,20 @@ const App: React.FC = () => {
   const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoEntry[]>([]);
   const [generatedAudio, setGeneratedAudio] = useState<GeneratedAudioEntry[]>([]);
   const [generatedWebpages, setGeneratedWebpages] = useState<GeneratedWebpageEntry[]>([]);
-  const [generatedCodeEntries, setGeneratedCodeEntries] = useState<GeneratedCodeEntry[]>([]); // New state for generated code
+  const [generatedCodeEntries, setGeneratedCodeEntries] = useState<GeneratedCodeEntry[]>([]);
+  
+  // New state for Zeno Connect posts
+  const [generatedPosts, setGeneratedPosts] = useState<SocialPost[]>([]);
+
+  // Persist login state
+  useEffect(() => {
+    localStorage.setItem('zeno_is_logged_in', String(isLoggedIn));
+    if (!isLoggedIn && activePage !== 'login') {
+      setActivePage('login'); // Redirect to login if not logged in
+    } else if (isLoggedIn && activePage === 'login') {
+      setActivePage('ask'); // Redirect from login if already logged in
+    }
+  }, [isLoggedIn, activePage]);
 
   useEffect(() => {
     localStorage.setItem('zeno_personality', personality);
@@ -47,10 +65,24 @@ const App: React.FC = () => {
     localStorage.setItem('zeno_custom_personality', customPersonalityInstruction);
   }, [customPersonalityInstruction]);
 
-
   const handleNavigate = (pageId: NavID) => {
+    if (!isLoggedIn && pageId !== 'login') {
+      setActivePage('login');
+      return;
+    }
     setActivePage(pageId);
   };
+
+  const createSocialPost = (type: SocialPost['type'], content: SocialPost['content'], prompt: string, author: string = 'You'): SocialPost => ({
+    id: `${type}-${Date.now()}`,
+    type,
+    content,
+    prompt,
+    author,
+    timestamp: new Date().toLocaleString(),
+    likes: 0,
+    comments: [],
+  });
 
   const onSaveImage = (url: string, prompt: string) => {
     const newEntry: GeneratedImageEntry = {
@@ -60,6 +92,7 @@ const App: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
     setGeneratedImages(prev => [...prev, newEntry]);
+    setGeneratedPosts(prev => [...prev, createSocialPost('image', { url, thumbnail: url }, prompt)]);
   };
 
   const onSaveVideo = (url: string, prompt: string) => {
@@ -70,6 +103,7 @@ const App: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
     setGeneratedVideos(prev => [...prev, newEntry]);
+    setGeneratedPosts(prev => [...prev, createSocialPost('video', { url, thumbnail: '' }, prompt)]); // TODO: Add video thumbnail
   };
 
   const onSaveAudio = (url: string, text: string) => {
@@ -80,6 +114,7 @@ const App: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
     setGeneratedAudio(prev => [...prev, newEntry]);
+    setGeneratedPosts(prev => [...prev, createSocialPost('audio', { url, text }, text)]);
   };
 
   const onSaveWebpage = (html: string, css: string, javascript: string, prompt: string) => {
@@ -92,6 +127,7 @@ const App: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
     setGeneratedWebpages(prev => [...prev, newEntry]);
+    setGeneratedPosts(prev => [...prev, createSocialPost('webpage', { html, css, javascript }, prompt)]);
   };
 
   const onSaveCode = (code: string, language: string, prompt: string) => {
@@ -103,10 +139,20 @@ const App: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
     setGeneratedCodeEntries(prev => [...prev, newEntry]);
+    setGeneratedPosts(prev => [...prev, createSocialPost('code', { code, language }, prompt)]);
+  };
+
+  // Callback for directly saving text posts from Zeno Connect
+  const onSavePost = (type: SocialPost['type'], content: SocialPost['content'], prompt: string, author: string = 'You') => {
+    setGeneratedPosts(prev => [...prev, createSocialPost(type, content, prompt, author)]);
   };
 
 
   const renderActivePage = () => {
+    if (!isLoggedIn && activePage !== 'login') {
+      return <LoginPage setIsLoggedIn={setIsLoggedIn} />;
+    }
+
     switch (activePage) {
       case 'ask':
         return <AskAI personality={personality} customPersonalityInstruction={customPersonalityInstruction} />;
@@ -140,11 +186,14 @@ const App: React.FC = () => {
         return <CameraVision />;
       case 'code_generator':
         return <CodeGenerator onSaveCode={onSaveCode} />;
-      case 'game_maker': // New case for GameMaker
+      case 'game_maker':
         return <GameMaker onSaveCode={onSaveCode} />;
-      case 'login': // New case for placeholder Login page
-        // The LOGIN_PAGE_CONTENT type definition will be fixed in constants.ts
-        return <Card title={LOGIN_PAGE_CONTENT.title} description={LOGIN_PAGE_CONTENT.description}>{LOGIN_PAGE_CONTENT.content}</Card>;
+      case 'login':
+        return <LoginPage setIsLoggedIn={setIsLoggedIn} />;
+      case 'logout': // Logout is handled in Sidebar, this case should ideally not be reached
+        return <LoginPage setIsLoggedIn={setIsLoggedIn} />;
+      case 'zeno_connect': // New: Zeno Connect
+        return <ZenoConnect generatedPosts={generatedPosts} onSavePost={onSavePost} />;
       case 'settings':
         return (
             <Settings
@@ -161,19 +210,21 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-zeno-bg text-zeno-text font-sans">
-      <Sidebar activePage={activePage} onNavigate={handleNavigate} />
+    <div className="flex h-screen bg-zeno-bg text-zeno-muted font-sans">
+      <Sidebar activePage={activePage} onNavigate={handleNavigate} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
         {renderActivePage()}
       </main>
-      <VoiceCommandAssistant
-        activePage={activePage}
-        onNavigate={handleNavigate}
-        currentPersonality={personality}
-        onPersonalityChange={setPersonality}
-        customPersonalityInstruction={customPersonalityInstruction}
-        setTranscriptionHistory={setTranscriptionHistory}
-      />
+      {isLoggedIn && ( // Only show voice assistant if logged in
+        <VoiceCommandAssistant
+          activePage={activePage}
+          onNavigate={handleNavigate}
+          currentPersonality={personality}
+          onPersonalityChange={setPersonality}
+          customPersonalityInstruction={customPersonalityInstruction}
+          setTranscriptionHistory={setTranscriptionHistory}
+        />
+      )}
     </div>
   );
 };

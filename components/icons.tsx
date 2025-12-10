@@ -137,3 +137,32 @@ export const MagnifyingGlassIcon: React.FC<IconProps> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
   </svg>
 );
+
+// New: ArrowRightOnRectangleIcon for logout
+export const ArrowRightOnRectangleIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 4.5H16.5a2.25 2.25 0 012.25 2.25v9.5A2.25 2.25 0 0116.5 19H5.25m-1.5 0h-.375a1.125 1.125 0 01-1.125-1.125V5.625c0-.619.504-1.125 1.125-1.125H3.75m1.5 0l-.375 0M10.5 8.25L13.5 12l-3 3M12 4.5l-.75 0m1.5 0c0-.619-.504-1.125-1.125-1.125H11.25m-.75 0h-1.5m1.5 0c0 .619-.504 1.125-1.125 1.125H11.25m.75 0l.75 0" />
+  </svg>
+);
+
+// New: UsersIcon for Zeno Connect
+export const UsersIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.75c-.892 0-1.7-.132-2.434-.377a10.05 10.05 0 01-2.072-1.397 7.662 7.662 0 00-.73-2.887l.234-.413A7.5 7.5 0 0012 9.75c-1.465 0-2.774.457-3.834 1.229L8.63 11.23a.75.75 0 01-.107.82L6.11 13.585A6 6 0 012.25 18.75c0 .354.022.705.066 1.053L2.25 21l-.75.75M16.5 10.5h1.5a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0018 4.5h-1.5m0 6a2.25 2.25 0 00-2.25-2.25H9.75M16.5 10.5V18" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+// New: HeartIcon for social interactions (e.g., likes)
+export const HeartIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.933 0-3.606 1.082-4.312 2.625-.706-1.543-2.379-2.625-4.312-2.625C5.099 3.75 3 5.835 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+  </svg>
+);
+
+// New: ChatBubbleOvalLeftIcon for social interactions (e.g., comments)
+export const ChatBubbleOvalLeftIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.722.28c-1.247.094-2.261 1.14-2.261 2.403v.215c0 .334-.144.65-.401.869l-1.02.732c-.257.184-.595.283-.94.283a1.503 1.503 0 01-1.06-.44l-4.915-4.915c-.413-.413-.62-1.002-.62-1.606v-3.483c0-.97.616-1.815 1.5-2.097m14.25-2.139a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v3.483c0 .604.207 1.193.62 1.606l4.915 4.915c.413.413 1.002.62 1.606.62h3.483c.97 0 1.815-.616 2.097-1.5l3.722-.28c1.136-.093 1.98-1.057 1.98-2.193v-4.286c0-.97-.616-1.815-1.5-2.097Z" />
+  </svg>
+);
